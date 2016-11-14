@@ -35,13 +35,12 @@ polymer_library = rule(
 def _dartLibImp(repository_ctx):
    print ("Creating repo for %s" % repository_ctx.name)
 
-   dep_string = ",".join([ ("'%s'" % x) for x in repository_ctx.attr.deps ])
-
-   if (dep_string) :
-    dep_string = "deps = [%s]," % dep_string
-
-   print ("DEPS : %s" % dep_string)
-
+   if (repository_ctx.attr.deps) :
+     dep_string = ",".join([ ("'%s'" % x) for x in repository_ctx.attr.deps ])
+     dep_string = "deps = [%s]," % dep_string
+     print ("DEPS : %s" % dep_string)
+   else :
+     dep_string = ""
 
    repository_ctx.template(
     "BUILD",repository_ctx.attr._templ,
@@ -56,6 +55,7 @@ dart_library = repository_rule(
     attrs = {
       'deps' : attr.label_list(allow_files=False,providers=["summary"]),
       'packageName' : attr.string(),
+      'version' : attr.string(),
       '_templ' : attr.label(default=Label("//:pub.template.BUILD"))
     }
   )
