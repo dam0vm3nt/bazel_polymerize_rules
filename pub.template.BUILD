@@ -3,7 +3,7 @@ load('@polymerize//:polymerize.bzl', 'polymer_library')
 
 package(default_visibility=['//visibility:public'])
 
-filegroup(name = "@{package_name}", srcs=glob(["lib/**/*.dart"]))
+#filegroup(name = "@{package_name}", srcs=glob(["lib/**/*.dart"]))
 
 polymer_library(
   name = 'library',
