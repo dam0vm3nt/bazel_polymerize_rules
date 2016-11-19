@@ -1,4 +1,6 @@
 #!/bin/sh
 
-echo "POLYMERIZE $*" | tee $2
-echo "SUMMARY $*" | tee $4
+echo -- $*
+/usr/bin/dart  /home/vittorio/Develop/dart/devc_builder/bin/polymerize.dart $*
+
+exit 0
