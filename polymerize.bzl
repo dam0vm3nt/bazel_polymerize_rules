@@ -37,8 +37,8 @@ def _impl(ctx):
       args += ['-m',f.summary.path]
       all_inputs += [f.summary]
       if (f.external) :
-        args += ['-M',"%s=%s/library" % (f.package_name ,f.label.workspace_root)]
-        print("DEP : %s =>  %s/library" % (f.package_name ,f.label.workspace_root))
+        args += ['-M',"%s=%s/%s" % (f.package_name ,f.label.workspace_root,f.label.name)]
+        #print("DEP : %s =>  %s/library" % (f.package_name ,f.label.workspace_root))
 
   args += ['-x',sum.path]
   args += ['-o',ctx.outputs.js.path]
@@ -70,15 +70,14 @@ def _impl(ctx):
 polymer_library = rule(
   implementation=_impl,
   attrs={
-      "dart_sources": attr.label_list(allow_files=True),
-      "base_path" : attr.label(mandatory=True,allow_files=True),
+      'dart_sources': attr.label_list(allow_files=True),
+      'base_path' : attr.label(mandatory=True,allow_files=True),
       'package_name' : attr.string(),
       'version' : attr.string(),
       'external' : attr.int(default=0),
       'asset_prefix_length' : attr.int(default=4),  # remove 'lib/' from assets
-      "html_templates": attr.label_list(allow_files=True),
-      "asset_output" : attr.output_list(),
-      "deps": attr.label_list(allow_files=False,providers=["summary"]),
+      'html_templates': attr.label_list(allow_files=True),
+      'deps': attr.label_list(allow_files=False,providers=["summary"]),
       '_exe' : attr.label(cfg='host',default = Label('//:polymerize'),executable=True)
   },
   outputs = {

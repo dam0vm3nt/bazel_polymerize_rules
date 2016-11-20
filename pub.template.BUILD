@@ -6,7 +6,7 @@ package(default_visibility=['//visibility:public'])
 #filegroup(name = "@{package_name}", srcs=glob(["lib/**/*.dart"]))
 
 polymer_library(
-  name = 'library',
+  name = '@{package_name}',
   @{deps}
   dart_sources = glob(['lib/**/*.dart']),
   base_path = "//:lib",
