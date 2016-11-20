@@ -46,6 +46,11 @@ def _impl(ctx):
   args += ['-v',ctx.attr.version]
   args += ['-b',ctx.files.base_path[0].path]
 
+  if (ctx.attr.export_sdk) :
+    sdk_out = ctx.new_file('dart_sdk.js');
+    requirejs_out = ctx.new_file('require.js');
+    args += ['--export-sdk',sdk_out.path,'--export-requirejs',requirejs_out.path]
+    all_outputs += [sdk_out,requirejs_out]
 
   runfiles = ctx.runfiles(
     files = ctx.files.html_templates
@@ -74,6 +79,7 @@ polymer_library = rule(
       'base_path' : attr.label(mandatory=True,allow_files=True),
       'package_name' : attr.string(),
       'version' : attr.string(),
+      'export_sdk' : attr.int(default=0),
       'external' : attr.int(default=0),
       'asset_prefix_length' : attr.int(default=4),  # remove 'lib/' from assets
       'html_templates': attr.label_list(allow_files=True),
