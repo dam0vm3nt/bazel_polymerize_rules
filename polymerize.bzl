@@ -2,7 +2,7 @@ def _impl(ctx):
   # args
   # args = [ctx.outputs.js.path] + [f.path for f in ctx.files.srcs]
 
-  sum = ctx.new_file(ctx.outputs.js.basename+".sum")
+  sum = ctx.new_file(ctx.configuration.bin_dir, ctx.outputs.js.basename+".sum")
   #sum = ctx.outputs.summary
   #  -p pippo -v 1.0
 
@@ -10,37 +10,74 @@ def _impl(ctx):
   for f in ctx.files.dart_sources :
     args += ['-s',f.path]
 
-  inputs = ctx.files.dart_sources +  ctx.files.html_templates
+  #for f in ctx.files.html_templates :
+  #  args += ['-t',f.path]
+
+  all_outputs = [ctx.outputs.js,sum]
+  output_html = [];
+  tmpl_gen = "";
+
+  for h in ctx.attr.html_templates:
+    hf = ctx.new_file(h.label.name[ctx.attr.asset_prefix_length:]);
+    output_html += [hf]
+    all_outputs += [hf]
+    for f in h.files :
+      tmpl_gen += "%s\n%s\n" % (f.path,hf.path)
+      #args += ['-t',"\"%s@=>@%s\"" % (f.path,hf.path)]
+
+  tmpl_rule = ctx.new_file(ctx.label.name+"_templ.ruls");
+  ctx.file_action(tmpl_rule,content =tmpl_gen);
+  args += ['-T',tmpl_rule.path]
+
+  all_inputs = ctx.files.dart_sources +  ctx.files.html_templates + [tmpl_rule]
 
   if (ctx.attr.deps) :
     for f in ctx.attr.deps :
       #print("USING SUM : %s" % (f.summary))
       args += ['-m',f.summary.path]
-      inputs += [f.summary]
+      all_inputs += [f.summary]
+      if (f.external) :
+        args += ['-M',"%s=%s/library" % (f.package_name ,f.label.workspace_root)]
+        print("DEP : %s =>  %s/library" % (f.package_name ,f.label.workspace_root))
 
   args += ['-x',sum.path]
   args += ['-o',ctx.outputs.js.path]
   args += ['-p',ctx.attr.package_name]
   args += ['-v',ctx.attr.version]
+  args += ['-b',ctx.files.base_path[0].path]
+
+
+  runfiles = ctx.runfiles(
+    files = ctx.files.html_templates
+    )
 
   ctx.action(
-    inputs=inputs,
-    outputs= [ctx.outputs.js,sum],
+    inputs=all_inputs,
+    outputs= all_outputs,
     arguments= args, # ['-o']+[ctx.outputs.js.path]+['-os']+[sum.path]+['-i']+ [f.path for f in ctx.files.dart_sources]+['-h']+ [f.path for f in ctx.files.html_templates]+['-s']+[f.summary.path for f in ctx.attr.deps],
     progress_message="Polymerizing %s" % ctx.outputs.js.short_path,
     executable= ctx.executable._exe)
 
   return struct(
-    summary= sum #ctx.outputs.summary
+    runfiles= runfiles,
+    summary= sum, #ctx.outputs.summary
+    generated_html = output_html,
+    package_name = ctx.attr.package_name,
+    version = ctx.attr.version,
+    external = ctx.attr.external
     )
 
 polymer_library = rule(
   implementation=_impl,
   attrs={
       "dart_sources": attr.label_list(allow_files=True),
+      "base_path" : attr.label(mandatory=True,allow_files=True),
       'package_name' : attr.string(),
       'version' : attr.string(),
+      'external' : attr.int(default=0),
+      'asset_prefix_length' : attr.int(default=4),  # remove 'lib/' from assets
       "html_templates": attr.label_list(allow_files=True),
+      "asset_output" : attr.output_list(),
       "deps": attr.label_list(allow_files=False,providers=["summary"]),
       '_exe' : attr.label(cfg='host',default = Label('//:polymerize'),executable=True)
   },
@@ -64,11 +101,11 @@ def _dartLibImp(repository_ctx):
      dep_string = ""
 
    #repository_ctx.execute(['dart','polymerize','download_package')
-   pkg_src = "/home/vittorio/.pub-cache/hosted/http%%58%%47%%47pub.drafintech.it%%585001/%s-%s/lib" % (repository_ctx.attr.package_name , repository_ctx.attr.version)
+   #pkg_src = "%s/.pub-cache/hosted/http%%58%%47%%47pub.drafintech.it%%585001/%s-%s/lib" % (repository_ctx.configuration.default_shell_env['HOME'],repository_ctx.attr.package_name , repository_ctx.attr.version)
 
    #print("SRC: %s" % pkg_src)
 
-   repository_ctx.symlink(pkg_src,"lib")
+   repository_ctx.symlink(repository_ctx.attr.src_path,"")
 
    repository_ctx.template(
     "BUILD",repository_ctx.attr._templ,
@@ -86,6 +123,7 @@ dart_library = repository_rule(
       'deps' : attr.string_list(),
       'package_name' : attr.string(),
       'version' : attr.string(),
+      'src_path' : attr.string(),
       '_templ' : attr.label(default=Label("//:pub.template.BUILD")),
       '_pub_download' : attr.label(cfg='host',default = Label('//:pub_download'),executable=True)
     }
