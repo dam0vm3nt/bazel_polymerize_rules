@@ -105,13 +105,14 @@ def _dartLibImp(repository_ctx):
    else :
      dep_string = ""
 
-   if (repository_ctx.attr.download) :
+   if (!repository_ctx.attr.src_path) :
      repository_ctx.execute([
        'dart',
        '/home/vittorio/Develop/dart/devc_builder/bin/polymerize.dart',
        'pub',
        '-p',repository_ctx.attr.package_name,
        '-v',repository_ctx.attr.version,
+       '-H',repository_ctx.attr.pub_host,
        '-d',repository_ctx.path("")])
    #pkg_src = "%s/.pub-cache/hosted/http%%58%%47%%47pub.drafintech.it%%585001/%s-%s/lib" % (repository_ctx.configuration.default_shell_env['HOME'],repository_ctx.attr.package_name , repository_ctx.attr.version)
    else :
@@ -133,9 +134,9 @@ dart_library = repository_rule(
     attrs = {
       'deps' : attr.string_list(),
       'package_name' : attr.string(),
+      'pub_host' : attr.string(default='https://pub.dartlang.org/api'),
       'version' : attr.string(),
       'src_path' : attr.string(),
-      'download' : attr.int(default=0),
       '_templ' : attr.label(default=Label("//:pub.template.BUILD")),
       #'_pub_download' : attr.label(cfg='host',default = Label('//:pub_download'),executable=True)
     }
