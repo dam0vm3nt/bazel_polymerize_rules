@@ -1,6 +1,6 @@
 # BAZEL RULES FOR POLYMERIZE
 
-This package contains bazel rules for a [polymerize]() dart project.
+This package contains bazel rules for a [polymerize](https://pub.dartlang.org/packages/polymerize) dart project.
 
 # Usage
 
@@ -20,7 +20,7 @@ In your `WORKSPACE` file add the following:
     # Download and init the polymerize tool
     init_polymerize()
 
-Then or any library you want to import from pub add a `dart_library` repository, for example if you want to use  package `js` version `0.6.1` :
+Then for any library you want to import from pub add a `dart_library` repository, for example if you want to use  package `js` version `0.6.1` :
 
     dart_library(
      name='js',
@@ -61,24 +61,3 @@ All the attributes should be straightforward, except :
  - export_sdk : 1= if you want to also generate the `dart_sdk.js` and `require.js` files. Ususally only needed in the main module (the one with the `index.html`)
 
 
-
-
-# Next steps
-
- - [x] ~~import automatici (`@HtmlImport`)~~
- - [x] ~~ottenere i percorsi direttamente da pub per i moduli importati~~
- - [ ] generare il wrapper degli elementi noti automaticamente usando una rule bazel
-   - scarica l'elemento da github
-   - la rule hydrolizza l'elemento
-	- RICORDA : anche il tool per hydrolisis dovrebbe essere un target
-   - genera il wrapper dart
-   - modifica il codice HTML correggendo gli imports
-   - produce il BUILD
-
-## Note
-
-Con il wrapper la figata è che per usare un elemento JS basta dichiararlo come dipendenza, es.:
-
-    polymer_import_bower(
-     name='paper-dialog',
-     repository='http://github.com/PolymerElements/paper-dialog')
