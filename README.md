@@ -2,7 +2,7 @@
 
  - [x] ~~import automatici (`@HtmlImport`)~~
  - [x] ~~ottenere i percorsi direttamente da pub per i moduli importati~~
- - generare il wrapper degli elementi noti automaticamente usando una rule bazel
+ - [ ] generare il wrapper degli elementi noti automaticamente usando una rule bazel
    - scarica l'elemento da github
    - la rule hydrolizza l'elemento 
 	- RICORDA : anche il tool per hydrolisis dovrebbe essere un target 
