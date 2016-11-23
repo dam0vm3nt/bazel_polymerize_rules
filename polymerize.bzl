@@ -84,7 +84,7 @@ polymer_library = rule(
       'asset_prefix_length' : attr.int(default=4),  # remove 'lib/' from assets
       'html_templates': attr.label_list(allow_files=True),
       'deps': attr.label_list(allow_files=False,providers=["summary"]),
-      '_exe' : attr.label(cfg='host',default = Label('//:polymerize'),executable=True)
+      '_exe' : attr.label(cfg='host',default = Label('@dartpub//:polymerize'),executable=True)
   },
   outputs = {
     "js" : "%{name}.js",
@@ -105,12 +105,14 @@ def _dartLibImp(repository_ctx):
    else :
      dep_string = ""
 
+   repository_ctx.symlink(Label("@dartpub//:polymerize.sh"),"pub.sh")
+
    if (repository_ctx.attr.src_path) :
     repository_ctx.symlink(repository_ctx.attr.src_path,"")
    else :
      repository_ctx.execute([
-       'dart',
-       '/home/vittorio/Develop/dart/devc_builder/bin/polymerize.dart',
+       'bash',
+       '%s' % repository_ctx.path('pub.sh'),
        'pub',
        '-p',repository_ctx.attr.package_name,
        '-v',repository_ctx.attr.version,
@@ -137,3 +139,32 @@ dart_library = repository_rule(
       #'_pub_download' : attr.label(cfg='host',default = Label('//:pub_download'),executable=True)
     }
   )
+
+def _dartPubImp(repository_ctx) :
+ #print("CREATING POLYMERIZE TOOL REPOSITORY")
+ repository_ctx.symlink("/home/vittorio/Develop/dart/devc_builder","tool")
+ #print("PUBBING : %s " % repository_ctx.path(''))
+ repository_ctx.template('pub_pkg.sh',repository_ctx.attr._pub_pkg,substitutions={
+   '${base_dir}' : "%s"  % repository_ctx.path('tool'),
+   '${cache_dir}' : "%s" % repository_ctx.path('cache')
+   },executable=True)
+ repository_ctx.execute([
+   'bash',
+   repository_ctx.path('pub_pkg.sh')])
+
+ #print("REPPING")
+
+ repository_ctx.template('polymerize.sh',repository_ctx.attr._polymerize,substitutions={
+   '${base_dir}' : "%s"  % repository_ctx.path('tool')
+   },executable=True)
+ #print("CIPPING")
+ repository_ctx.template('BUILD',repository_ctx.attr._dartpub_build,substitutions={});
+
+dart_pub = repository_rule(
+  implementation = _dartPubImp,
+  attrs = {
+    'pub_host' : attr.string(default='https://pub.dartlang.org/api'),
+    '_pub_pkg' : attr.label(default=Label('//:template.pub_pkg.sh')),
+    '_polymerize' : attr.label(default=Label('//:template.polymerize.sh')),
+    '_dartpub_build' : attr.label(default=Label('//:dartpub.BUILD'))
+  })
