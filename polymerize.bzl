@@ -105,7 +105,9 @@ def _dartLibImp(repository_ctx):
    else :
      dep_string = ""
 
-   if (!repository_ctx.attr.src_path) :
+   if (repository_ctx.attr.src_path) :
+    repository_ctx.symlink(repository_ctx.attr.src_path,"")
+   else :
      repository_ctx.execute([
        'dart',
        '/home/vittorio/Develop/dart/devc_builder/bin/polymerize.dart',
@@ -114,10 +116,6 @@ def _dartLibImp(repository_ctx):
        '-v',repository_ctx.attr.version,
        '-H',repository_ctx.attr.pub_host,
        '-d',repository_ctx.path("")])
-   #pkg_src = "%s/.pub-cache/hosted/http%%58%%47%%47pub.drafintech.it%%585001/%s-%s/lib" % (repository_ctx.configuration.default_shell_env['HOME'],repository_ctx.attr.package_name , repository_ctx.attr.version)
-   else :
-    #print("SRC: %s" % pkg_src)
-    repository_ctx.symlink(repository_ctx.attr.src_path,"")
 
    repository_ctx.template(
     "BUILD",repository_ctx.attr._templ,
@@ -125,9 +123,7 @@ def _dartLibImp(repository_ctx):
       "@{name}" : repository_ctx.name,
       "@{deps}" : dep_string,
       "@{package_name}" : repository_ctx.attr.package_name,
-      "@{version}" : repository_ctx.attr.version
-     }
-     )
+      "@{version}" : repository_ctx.attr.version })
 
 dart_library = repository_rule(
     implementation = _dartLibImp,
