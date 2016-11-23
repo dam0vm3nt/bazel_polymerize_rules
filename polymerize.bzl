@@ -25,7 +25,7 @@ def _impl(ctx):
       tmpl_gen += "%s\n%s\n" % (f.path,hf.path)
       #args += ['-t',"\"%s@=>@%s\"" % (f.path,hf.path)]
 
-  tmpl_rule = ctx.new_file(ctx.label.name+"_templ.ruls");
+  tmpl_rule = ctx.new_file(ctx.label.name+"_template.map");
   ctx.file_action(tmpl_rule,content =tmpl_gen);
   args += ['-T',tmpl_rule.path]
 
@@ -105,12 +105,18 @@ def _dartLibImp(repository_ctx):
    else :
      dep_string = ""
 
-   #repository_ctx.execute(['dart','polymerize','download_package')
+   if (repository_ctx.attr.download) :
+     repository_ctx.execute([
+       'dart',
+       '/home/vittorio/Develop/dart/devc_builder/bin/polymerize.dart',
+       'pub',
+       '-p',repository_ctx.attr.package_name,
+       '-v',repository_ctx.attr.version,
+       '-d',repository_ctx.path("")])
    #pkg_src = "%s/.pub-cache/hosted/http%%58%%47%%47pub.drafintech.it%%585001/%s-%s/lib" % (repository_ctx.configuration.default_shell_env['HOME'],repository_ctx.attr.package_name , repository_ctx.attr.version)
-
-   #print("SRC: %s" % pkg_src)
-
-   repository_ctx.symlink(repository_ctx.attr.src_path,"")
+   else :
+    #print("SRC: %s" % pkg_src)
+    repository_ctx.symlink(repository_ctx.attr.src_path,"")
 
    repository_ctx.template(
     "BUILD",repository_ctx.attr._templ,
@@ -129,7 +135,8 @@ dart_library = repository_rule(
       'package_name' : attr.string(),
       'version' : attr.string(),
       'src_path' : attr.string(),
+      'download' : attr.int(default=0),
       '_templ' : attr.label(default=Label("//:pub.template.BUILD")),
-      '_pub_download' : attr.label(cfg='host',default = Label('//:pub_download'),executable=True)
+      #'_pub_download' : attr.label(cfg='host',default = Label('//:pub_download'),executable=True)
     }
   )

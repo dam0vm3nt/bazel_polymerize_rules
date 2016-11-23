@@ -1,6 +1,8 @@
 #!/bin/sh
 
 #echo -- $*
-/usr/bin/dart  /home/vittorio/Develop/dart/devc_builder/bin/polymerize.dart $*
+#POLYMERIZE_DEV_HOME=$HOME/dart/devc_builder
+#/usr/bin/dart  $POLYMERIZE_DEV_HOME/bin/polymerize.dart $*
+polymerize $*
 
 exit 0
