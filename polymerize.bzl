@@ -105,14 +105,14 @@ def _dartLibImp(repository_ctx):
    else :
      dep_string = ""
 
-   repository_ctx.symlink(Label("@dartpub//:polymerize.sh"),"pub.sh")
+   repository_ctx.symlink(Label("@dartpub//:polymerize.sh"),"polymerize.sh")
 
    if (repository_ctx.attr.src_path) :
     repository_ctx.symlink(repository_ctx.attr.src_path,"")
    else :
      repository_ctx.execute([
        'bash',
-       '%s' % repository_ctx.path('pub.sh'),
+       '%s' % repository_ctx.path('polymerize.sh'),
        'pub',
        '-p',repository_ctx.attr.package_name,
        '-v',repository_ctx.attr.version,
@@ -142,20 +142,24 @@ dart_library = repository_rule(
 
 def _dartPubImp(repository_ctx) :
  #print("CREATING POLYMERIZE TOOL REPOSITORY")
- repository_ctx.symlink("/home/vittorio/Develop/dart/devc_builder","tool")
+ #repository_ctx.symlink("/home/vittorio/Develop/dart/devc_builder","tool")
  #print("PUBBING : %s " % repository_ctx.path(''))
  repository_ctx.template('pub_pkg.sh',repository_ctx.attr._pub_pkg,substitutions={
    '${base_dir}' : "%s"  % repository_ctx.path('tool'),
-   '${cache_dir}' : "%s" % repository_ctx.path('cache')
+   '${cache_dir}' : "%s" % repository_ctx.path('cache'),
+   '${pub_host}' : repository_ctx.attr.pub_host
    },executable=True)
  repository_ctx.execute([
    'bash',
-   repository_ctx.path('pub_pkg.sh')])
+   repository_ctx.path('pub_pkg.sh'),
+   repository_ctx.attr.package_name,
+   repository_ctx.attr.package_version])
 
  #print("REPPING")
 
  repository_ctx.template('polymerize.sh',repository_ctx.attr._polymerize,substitutions={
-   '${base_dir}' : "%s"  % repository_ctx.path('tool')
+   '${base_dir}' : "%s"  % repository_ctx.path('tool'),
+   '${cache_dir}' : "%s" % repository_ctx.path('cache'),
    },executable=True)
  #print("CIPPING")
  repository_ctx.template('BUILD',repository_ctx.attr._dartpub_build,substitutions={});
@@ -164,7 +168,17 @@ dart_pub = repository_rule(
   implementation = _dartPubImp,
   attrs = {
     'pub_host' : attr.string(default='https://pub.dartlang.org/api'),
+    'package_name' : attr.string(default='polymerize'),
+    'package_version' : attr.string(default='0.2.10'),
     '_pub_pkg' : attr.label(default=Label('//:template.pub_pkg.sh')),
     '_polymerize' : attr.label(default=Label('//:template.polymerize.sh')),
     '_dartpub_build' : attr.label(default=Label('//:dartpub.BUILD'))
   })
+
+
+def init_polymerize():
+  dart_pub(
+    name='dartpub',
+    package_name='polymerize',
+    package_version='0.2.10',
+    pub_host = 'http://pub.drafintech.it:5001')
