@@ -13,7 +13,8 @@ def _impl(ctx):
   #for f in ctx.files.html_templates :
   #  args += ['-t',f.path]
 
-  all_outputs = [ctx.outputs.js,sum]
+  html_out= ctx.new_file(ctx.outputs.js.basename+".html");
+  all_outputs = [ctx.outputs.js,sum,html_out]
   output_html = [];
   tmpl_gen = "";
 
@@ -41,6 +42,7 @@ def _impl(ctx):
         #print("DEP : %s =>  %s/library" % (f.package_name ,f.label.workspace_root))
 
   args += ['-x',sum.path]
+  args += ['--output_html',html_out.path]
   args += ['-o',ctx.outputs.js.path]
   args += ['-p',ctx.attr.package_name]
   args += ['-v',ctx.attr.version]
@@ -48,9 +50,10 @@ def _impl(ctx):
 
   if (ctx.attr.export_sdk) :
     sdk_out = ctx.new_file('dart_sdk.js');
-    requirejs_out = ctx.new_file('require.js');
-    args += ['--export-sdk',sdk_out.path,'--export-requirejs',requirejs_out.path]
-    all_outputs += [sdk_out,requirejs_out]
+    requirejs_out = ctx.new_file('imd.js');
+    requirehtml_out = ctx.new_file('imd.html');
+    args += ['--export-sdk',sdk_out.path,'--export-requirejs',requirejs_out.path,'--export-require_html',requirehtml_out.path]
+    all_outputs += [sdk_out,requirejs_out,requirehtml_out]
 
   runfiles = ctx.runfiles(
     files = ctx.files.html_templates
@@ -105,11 +108,11 @@ def _dartLibImp(repository_ctx):
    else :
      dep_string = ""
 
-   repository_ctx.symlink(Label("@dartpub//:polymerize.sh"),"polymerize.sh")
 
    if (repository_ctx.attr.src_path) :
     repository_ctx.symlink(repository_ctx.attr.src_path,"")
    else :
+     repository_ctx.symlink(Label("@dartpub//:polymerize.sh"),"polymerize.sh")
      repository_ctx.execute([
        'bash',
        '%s' % repository_ctx.path('polymerize.sh'),
@@ -142,13 +145,18 @@ dart_library = repository_rule(
 
 def _dartPubImp(repository_ctx) :
  #print("CREATING POLYMERIZE TOOL REPOSITORY")
- #repository_ctx.symlink("/home/vittorio/Develop/dart/devc_builder","tool")
  #print("PUBBING : %s " % repository_ctx.path(''))
+
  repository_ctx.template('pub_pkg.sh',repository_ctx.attr._pub_pkg,substitutions={
    '${base_dir}' : "%s"  % repository_ctx.path('tool'),
    '${cache_dir}' : "%s" % repository_ctx.path('cache'),
-   '${pub_host}' : repository_ctx.attr.pub_host
+   '${pub_host}' : repository_ctx.attr.pub_host,
+   '${overrides}' : repository_ctx.attr.local_dir
    },executable=True)
+
+ if (repository_ctx.attr.local_dir) :
+   print("USING LOCAL REPOSITORY : %s" % repository_ctx.attr.local_dir);
+
  repository_ctx.execute([
    'bash',
    repository_ctx.path('pub_pkg.sh'),
@@ -170,6 +178,7 @@ dart_pub = repository_rule(
     'pub_host' : attr.string(default='https://pub.dartlang.org/api'),
     'package_name' : attr.string(default='polymerize'),
     'package_version' : attr.string(default='0.2.10'),
+    'local_dir': attr.string(),
     '_pub_pkg' : attr.label(default=Label('//:template.pub_pkg.sh')),
     '_polymerize' : attr.label(default=Label('//:template.polymerize.sh')),
     '_dartpub_build' : attr.label(default=Label('//:dartpub.BUILD'))
@@ -181,4 +190,13 @@ def init_polymerize():
     name='dartpub',
     package_name='polymerize',
     package_version='0.2.10',
+    pub_host = 'http://pub.drafintech.it:5001')
+
+
+def init_local_polymerize(path):
+  dart_pub(
+    name='dartpub',
+    package_name='polymerize',
+    package_version='0.2.10',
+    local_dir = path,
     pub_host = 'http://pub.drafintech.it:5001')
