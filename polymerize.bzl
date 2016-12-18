@@ -62,6 +62,9 @@ def _impl(ctx):
 
   args += ['-M',"%s=%s" % (ctx.attr.package_name , modulePath(ctx.label))]
 
+  args += ['--bower-needs', ctx.outputs.bower_needs.path]
+  all_outputs += [ctx.outputs.bower_needs]
+
   args += ['-x',sum.path]
   args += ['--output_html',html_out.path]
   args += ['-o',ctx.outputs.js.path]
@@ -94,6 +97,7 @@ def _impl(ctx):
   return struct(
     runfiles= runfiles,
     summary= sum, #ctx.outputs.summary
+    bower_needs = ctx.outputs.bower_needs,
     generated_html = output_html,
     package_name = ctx.attr.package_name,
     version = ctx.attr.version,
@@ -116,6 +120,42 @@ polymer_library = rule(
   },
   outputs = {
     "js" : "%{name}.js",
-    "html" : "%{name}.mod.html"
+    "html" : "%{name}.mod.html",
+    "bower_needs" : "%{name}.bower"
   #  "summary" : "%{name}.sum"
   })
+
+
+def generateBowerImpl(ctx):
+  # collect all deps
+  args = ["bower"]
+  all_inputs = []
+  for f in ctx.attr.deps :
+    args += ['-u',f.bower_needs.path]
+    all_inputs += [f.bower_needs]
+
+  args += ['-o',ctx.outputs.dest.path]
+
+  T = ctx.new_file("bower_components/")
+
+  ctx.action(
+      inputs=all_inputs,
+      outputs= [ctx.outputs.dest,T],
+      arguments= args, # ['-o']+[ctx.outputs.js.path]+['-os']+[sum.path]+['-i']+ [f.path for f in ctx.files.dart_sources]+['-h']+ [f.path for f in ctx.files.html_templates]+['-s']+[f.summary.path for f in ctx.attr.deps],
+      progress_message="Producing bower file %s" % ctx.outputs.dest.short_path,
+      executable= ctx.executable._exe)
+
+  return struct(
+      bower=ctx.outputs.dest
+  )
+
+bower = rule(
+    implementation=generateBowerImpl,
+    attrs={
+        '_exe' : attr.label(cfg='host',default = Label('@dartpub//:polymerize'),executable=True),
+        'deps': attr.label_list(allow_files=False,providers=["bower_needs"])
+    },
+    outputs = {
+        "dest" : "bower.json"
+    }
+)
