@@ -137,12 +137,13 @@ def generateBowerImpl(ctx):
   args += ['-o',ctx.outputs.dest.path]
 
   T = ctx.new_file("bower_components/")
+  C = ctx.new_file(".config/")
 
   ctx.action(
       inputs=all_inputs,
-      outputs= [ctx.outputs.dest,T],
+      outputs= [ctx.outputs.dest,T,C],
       arguments= args, # ['-o']+[ctx.outputs.js.path]+['-os']+[sum.path]+['-i']+ [f.path for f in ctx.files.dart_sources]+['-h']+ [f.path for f in ctx.files.html_templates]+['-s']+[f.summary.path for f in ctx.attr.deps],
-      progress_message="Producing bower file %s" % ctx.outputs.dest.short_path,
+      progress_message="Download JS dependencies with %s" % ctx.outputs.dest.short_path,
       executable= ctx.executable._exe)
 
   return struct(
