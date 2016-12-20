@@ -51,13 +51,6 @@ def _dartPubImp(repository_ctx) :
  #print("CREATING POLYMERIZE TOOL REPOSITORY")
  #print("PUBBING : %s " % repository_ctx.path(''))
 
- repository_ctx.template('pub_pkg.sh',repository_ctx.attr._pub_pkg,substitutions={
-   '${base_dir}' : "%s"  % repository_ctx.path('tool'),
-   '${cache_dir}' : "%s" % repository_ctx.path('cache'),
-   '${pub_host}' : repository_ctx.attr.pub_host,
-   '${overrides}' : repository_ctx.attr.local_dir
-   },executable=True)
-
  repository_ctx.template('pub.py',repository_ctx.attr._pub_pkg_py,substitutions={
      '${base_dir}' : "%s"  % repository_ctx.path('tool'),
      '${cache_dir}' : "%s" % repository_ctx.path('cache'),
@@ -76,11 +69,6 @@ def _dartPubImp(repository_ctx) :
 
  #print("REPPING")
 
- repository_ctx.template('polymerize.sh',repository_ctx.attr._polymerize, substitutions={
-   '${base_dir}' : "%s"  % repository_ctx.path('tool'),
-   '${cache_dir}' : "%s" % repository_ctx.path('cache'),
-   },executable=True)
-
  repository_ctx.template('polymerize.py',repository_ctx.attr._polymerize_py,substitutions={
       '${base_dir}' : "%s"  % repository_ctx.path('tool'),
       '${cache_dir}' : "%s" % repository_ctx.path('cache'),
@@ -96,9 +84,7 @@ dart_pub = repository_rule(
     'package_name' : attr.string(default='polymerize'),
     'package_version' : attr.string(default='0.2.10'),
     'local_dir': attr.string(),
-    '_pub_pkg' : attr.label(default=Label('//:template.pub_pkg.sh')),
     '_pub_pkg_py' : attr.label(default=Label('//:template.pub.py')),
-    '_polymerize' : attr.label(default=Label('//:template.polymerize.sh')),
     '_polymerize_py' : attr.label(default=Label('//:template.polymerize.py')),
     '_dartpub_build' : attr.label(default=Label('//:dartpub.BUILD'))
   })

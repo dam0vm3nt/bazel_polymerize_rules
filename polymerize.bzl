@@ -116,8 +116,7 @@ polymer_library = rule(
       'asset_prefix_length' : attr.int(default=4),  # remove 'lib/' from assets
       'html_templates': attr.label_list(allow_files=True),
       'deps': attr.label_list(allow_files=False,providers=["summary"]),
-      '_exe' : attr.label(cfg='host',default = Label('@dartpub//:polymerize'),executable=True),
-      '_exe_py' : attr.label(cfg='host',default = Label('@dartpub//:polymerize_py'),executable=True)
+      '_exe_py' : attr.label(cfg='host',default = Label('@dartpub//:polymerize'),executable=True)
   },
   outputs = {
     "js" : "%{name}.js",
