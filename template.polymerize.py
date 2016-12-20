@@ -14,5 +14,5 @@ def polymerize(args):
     return exe.returncode
 
 if __name__ == '__main__':
-    print("Calling polymerize-py with %s" % (",".join(sys.argv[1:])))
+    #print("Calling polymerize-py with %s" % (",".join(sys.argv[1:])))
     exit(polymerize(sys.argv[1:]))
