@@ -1,5 +1,7 @@
 ##
-## Repo for cippos
+## Repository rule to crete
+## an external repository for a dart library
+##
 
 def _dartLibImp(repository_ctx):
    #print ("Creating repo for %s" % repository_ctx.name)
@@ -15,7 +17,7 @@ def _dartLibImp(repository_ctx):
    if (repository_ctx.attr.src_path) :
     repository_ctx.symlink(repository_ctx.attr.src_path,"")
    else :
-     repository_ctx.symlink(Label("@dartpub//:polymerize.py"),"polymerize.py")
+     repository_ctx.symlink(Label("@polymerize_tool//:polymerize.py"),"polymerize.py")
      repository_ctx.execute([
        'python',
        '%s' % repository_ctx.path('polymerize.py'),
@@ -46,6 +48,10 @@ dart_library = repository_rule(
     }
   )
 
+##
+## Repository rule to create a tool from a dart
+## package.
+##
 
 def _dartPubImp(repository_ctx) :
  #print("CREATING POLYMERIZE TOOL REPOSITORY")
@@ -69,20 +75,24 @@ def _dartPubImp(repository_ctx) :
 
  #print("REPPING")
 
- repository_ctx.template('polymerize.py',repository_ctx.attr._polymerize_py,substitutions={
+ repository_ctx.template('%s.py' % repository_ctx.attr.tool_name,repository_ctx.attr._polymerize_py,substitutions={
       '${base_dir}' : "%s"  % repository_ctx.path('tool'),
       '${cache_dir}' : "%s" % repository_ctx.path('cache'),
+      '${tool_name}' : repository_ctx.attr.tool_name
       },executable=True)
 
  #print("CIPPING")
- repository_ctx.template('BUILD',repository_ctx.attr._dartpub_build,substitutions={});
+ repository_ctx.template('BUILD',repository_ctx.attr._dartpub_build,substitutions={
+     '${tool_name}' : repository_ctx.attr.tool_name
+ });
 
-dart_pub = repository_rule(
+dart_tool = repository_rule(
   implementation = _dartPubImp,
   attrs = {
     'pub_host' : attr.string(default='https://pub.dartlang.org/api'),
     'package_name' : attr.string(default='polymerize'),
     'package_version' : attr.string(default='0.2.10'),
+    'tool_name' : attr.string(default='polymerize'),
     'local_dir': attr.string(),
     '_pub_pkg_py' : attr.label(default=Label('//:template.pub.py')),
     '_polymerize_py' : attr.label(default=Label('//:template.polymerize.py')),
@@ -90,18 +100,24 @@ dart_pub = repository_rule(
   })
 
 
+##
+## Convenience macros to create the polymerize_tool
+##
+
 def init_polymerize():
-  dart_pub(
-    name='dartpub',
+  dart_tool(
+    name='polymerize_tool',
     package_name='polymerize',
+    tool_name='polymerize',
     package_version='0.2.10',
     pub_host = 'http://pub.drafintech.it:5001')
 
 
 def init_local_polymerize(path):
-  dart_pub(
-    name='dartpub',
+  dart_tool(
+    name='polymerize_tool',
     package_name='polymerize',
+    tool_name='polymerize',
     package_version='0.2.10',
     local_dir = path,
     pub_host = 'http://pub.drafintech.it:5001')

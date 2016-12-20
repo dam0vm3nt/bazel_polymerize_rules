@@ -116,7 +116,7 @@ polymer_library = rule(
       'asset_prefix_length' : attr.int(default=4),  # remove 'lib/' from assets
       'html_templates': attr.label_list(allow_files=True),
       'deps': attr.label_list(allow_files=False,providers=["summary"]),
-      '_exe_py' : attr.label(cfg='host',default = Label('@dartpub//:polymerize'),executable=True)
+      '_exe_py' : attr.label(cfg='host',default = Label('@polymerize_tool//:polymerize'),executable=True)
   },
   outputs = {
     "js" : "%{name}.js",
@@ -136,12 +136,11 @@ def generateBowerImpl(ctx):
 
   args += ['-o',ctx.outputs.dest.path]
 
-  T = ctx.new_file("bower_components/")
-  C = ctx.new_file(".config/")
+  OUT = ctx.new_file("bower_components/")
 
   ctx.action(
       inputs=all_inputs,
-      outputs= [ctx.outputs.dest,T,C],
+      outputs= [ctx.outputs.dest,OUT],
       arguments= args, # ['-o']+[ctx.outputs.js.path]+['-os']+[sum.path]+['-i']+ [f.path for f in ctx.files.dart_sources]+['-h']+ [f.path for f in ctx.files.html_templates]+['-s']+[f.summary.path for f in ctx.attr.deps],
       progress_message="Download JS dependencies with %s" % ctx.outputs.dest.short_path,
       executable= ctx.executable._exe)
@@ -153,7 +152,7 @@ def generateBowerImpl(ctx):
 bower = rule(
     implementation=generateBowerImpl,
     attrs={
-        '_exe' : attr.label(cfg='host',default = Label('@dartpub//:polymerize'),executable=True),
+        '_exe' : attr.label(cfg='host',default = Label('@polymerize_tool//:polymerize'),executable=True),
         'deps': attr.label_list(allow_files=False,providers=["bower_needs"])
     },
     outputs = {

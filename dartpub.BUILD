@@ -1,6 +1,6 @@
 py_binary(
-  name='polymerize',
-  main='polymerize.py',
-  srcs=['polymerize.py'],
+  name='${tool_name}',
+  main='${tool_name}.py',
+  srcs=['${tool_name}.py'],
   visibility=["//visibility:public"])
 
