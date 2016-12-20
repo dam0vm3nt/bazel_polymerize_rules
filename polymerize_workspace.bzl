@@ -15,10 +15,10 @@ def _dartLibImp(repository_ctx):
    if (repository_ctx.attr.src_path) :
     repository_ctx.symlink(repository_ctx.attr.src_path,"")
    else :
-     repository_ctx.symlink(Label("@dartpub//:polymerize.sh"),"polymerize.sh")
+     repository_ctx.symlink(Label("@dartpub//:polymerize.py"),"polymerize.py")
      repository_ctx.execute([
-       'bash',
-       '%s' % repository_ctx.path('polymerize.sh'),
+       'python',
+       '%s' % repository_ctx.path('polymerize.py'),
        'pub',
        '-p',repository_ctx.attr.package_name,
        '-v',repository_ctx.attr.version,
@@ -68,10 +68,16 @@ def _dartPubImp(repository_ctx) :
 
  #print("REPPING")
 
- repository_ctx.template('polymerize.sh',repository_ctx.attr._polymerize,substitutions={
+ repository_ctx.template('polymerize.sh',repository_ctx.attr._polymerize, substitutions={
    '${base_dir}' : "%s"  % repository_ctx.path('tool'),
    '${cache_dir}' : "%s" % repository_ctx.path('cache'),
    },executable=True)
+
+ repository_ctx.template('polymerize.py',repository_ctx.attr._polymerize_py,substitutions={
+      '${base_dir}' : "%s"  % repository_ctx.path('tool'),
+      '${cache_dir}' : "%s" % repository_ctx.path('cache'),
+      },executable=True)
+
  #print("CIPPING")
  repository_ctx.template('BUILD',repository_ctx.attr._dartpub_build,substitutions={});
 
@@ -84,6 +90,7 @@ dart_pub = repository_rule(
     'local_dir': attr.string(),
     '_pub_pkg' : attr.label(default=Label('//:template.pub_pkg.sh')),
     '_polymerize' : attr.label(default=Label('//:template.polymerize.sh')),
+    '_polymerize_py' : attr.label(default=Label('//:template.polymerize.py')),
     '_dartpub_build' : attr.label(default=Label('//:dartpub.BUILD'))
   })
 

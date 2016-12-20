@@ -92,7 +92,7 @@ def _impl(ctx):
     outputs= all_outputs,
     arguments= args, # ['-o']+[ctx.outputs.js.path]+['-os']+[sum.path]+['-i']+ [f.path for f in ctx.files.dart_sources]+['-h']+ [f.path for f in ctx.files.html_templates]+['-s']+[f.summary.path for f in ctx.attr.deps],
     progress_message="Polymerizing %s" % ctx.outputs.js.short_path,
-    executable= ctx.executable._exe)
+    executable= ctx.executable._exe_py)
 
   return struct(
     runfiles= runfiles,
@@ -116,7 +116,8 @@ polymer_library = rule(
       'asset_prefix_length' : attr.int(default=4),  # remove 'lib/' from assets
       'html_templates': attr.label_list(allow_files=True),
       'deps': attr.label_list(allow_files=False,providers=["summary"]),
-      '_exe' : attr.label(cfg='host',default = Label('@dartpub//:polymerize'),executable=True)
+      '_exe' : attr.label(cfg='host',default = Label('@dartpub//:polymerize'),executable=True),
+      '_exe_py' : attr.label(cfg='host',default = Label('@dartpub//:polymerize_py'),executable=True)
   },
   outputs = {
     "js" : "%{name}.js",
