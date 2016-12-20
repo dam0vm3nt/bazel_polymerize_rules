@@ -95,8 +95,8 @@ dart_tool = repository_rule(
     'tool_name' : attr.string(default='polymerize'),
     'local_dir': attr.string(),
     '_pub_pkg_py' : attr.label(default=Label('//:template.pub.py')),
-    '_polymerize_py' : attr.label(default=Label('//:template.polymerize.py')),
-    '_dartpub_build' : attr.label(default=Label('//:dartpub.BUILD'))
+    '_polymerize_py' : attr.label(default=Label('//:template.dart_tool.py')),
+    '_dartpub_build' : attr.label(default=Label('//:dart_tool.BUILD'))
   })
 
 
