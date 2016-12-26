@@ -12,5 +12,5 @@ polymer_library(
   base_path = "//:lib",
   external = 1,
   html_templates = glob(['lib/**'],exclude=['lib/**/*.dart']),
-  package_name = '@{package_name}', #Cippa Lippa
+  package_name = '@{package_name}',
   version = '@{version}')

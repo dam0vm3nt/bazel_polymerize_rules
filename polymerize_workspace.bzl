@@ -109,7 +109,7 @@ def init_polymerize():
     name='polymerize_tool',
     package_name='polymerize',
     tool_name='polymerize',
-    package_version='0.2.10',
+    package_version='0.3.0',
     pub_host = 'http://pub.drafintech.it:5001')
 
 
