@@ -134,6 +134,9 @@ def generateBowerImpl(ctx):
     args += ['-u',f.bower_needs.path]
     all_inputs += [f.bower_needs]
 
+  for k in ctx.attr.resolutions.keys():
+    args += ['-r',k,'-R',ctx.attr.resolutions[k]]
+
   args += ['-o',ctx.outputs.dest.path]
 
   OUT = ctx.new_file("bower_components/")
@@ -153,6 +156,7 @@ bower = rule(
     implementation=generateBowerImpl,
     attrs={
         '_exe' : attr.label(cfg='host',default = Label('@polymerize_tool//:polymerize'),executable=True),
+        'resolutions' : attr.string_dict(),
         'deps': attr.label_list(allow_files=False,providers=["bower_needs"])
     },
     outputs = {
