@@ -1,3 +1,11 @@
+def _buildLibTemplate(repository_ctx,dep_string):
+  repository_ctx.template(
+   "BUILD",repository_ctx.attr._templ,
+   substitutions = {
+     "@{name}" : repository_ctx.name,
+     "@{deps}" : dep_string,
+     "@{package_name}" : repository_ctx.attr.package_name,
+     "@{version}" : repository_ctx.attr.version })
 ##
 ## Repository rule to crete
 ## an external repository for a dart library
@@ -5,6 +13,7 @@
 
 def _dartLibImp(repository_ctx):
    #print ("Creating repo for %s" % repository_ctx.name)
+
 
    if (repository_ctx.attr.deps) :
      dep_string = ",".join([ ("'%s'" % x) for x in repository_ctx.attr.deps ])
@@ -14,10 +23,13 @@ def _dartLibImp(repository_ctx):
      dep_string = ""
 
 
+
    if (repository_ctx.attr.src_path) :
     repository_ctx.symlink(repository_ctx.attr.src_path,"")
+    _buildLibTemplate(repository_ctx,dep_string)
    else :
      repository_ctx.symlink(Label("@polymerize_tool//:polymerize.py"),"polymerize.py")
+     _buildLibTemplate(repository_ctx,dep_string)
      repository_ctx.execute([
        'python',
        '%s' % repository_ctx.path('polymerize.py'),
@@ -27,13 +39,6 @@ def _dartLibImp(repository_ctx):
        '-H',repository_ctx.attr.pub_host,
        '-d',repository_ctx.path("")])
 
-   repository_ctx.template(
-    "BUILD",repository_ctx.attr._templ,
-    substitutions = {
-      "@{name}" : repository_ctx.name,
-      "@{deps}" : dep_string,
-      "@{package_name}" : repository_ctx.attr.package_name,
-      "@{version}" : repository_ctx.attr.version })
 
 dart_library = repository_rule(
     implementation = _dartLibImp,
@@ -67,11 +72,6 @@ def _dartPubImp(repository_ctx) :
  if (repository_ctx.attr.local_dir) :
    print("USING LOCAL REPOSITORY : %s" % repository_ctx.attr.local_dir);
 
- repository_ctx.execute([
-   'python',
-   repository_ctx.path('pub.py'),
-   repository_ctx.attr.package_name,
-   repository_ctx.attr.package_version])
 
  #print("REPPING")
 
@@ -85,6 +85,12 @@ def _dartPubImp(repository_ctx) :
  repository_ctx.template('BUILD',repository_ctx.attr._dartpub_build,substitutions={
      '${tool_name}' : repository_ctx.attr.tool_name
  });
+
+ repository_ctx.execute([
+   'python',
+   repository_ctx.path('pub.py'),
+   repository_ctx.attr.package_name,
+   repository_ctx.attr.package_version])
 
 dart_tool = repository_rule(
   implementation = _dartPubImp,
