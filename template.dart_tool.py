@@ -2,7 +2,7 @@ import subprocess, os, sys
 
 CACHE_DIR='${cache_dir}'
 
-DART_HOME='/usr/lib/dart/bin'
+DART_HOME='${dart_home}'
 
 def polymerize(args):
     exe = subprocess.Popen(['%s/bin/%s' % (CACHE_DIR,'${tool_name}')] + args, env={

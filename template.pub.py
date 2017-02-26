@@ -4,6 +4,7 @@ BASE_DIR = "${base_dir}"
 OVERRIDES = "${overrides}"
 PUB_HOSTED_URL = "${pub_host}"
 CACHE_DIR = "${cache_dir}"
+DART_HOME="${dart_home}"
 
 
 def pub(pkg_name, pkg_version):
@@ -26,7 +27,7 @@ dependencies:
     else:
         SOURCE_ARGS = [pkg_name, pkg_version]
 
-    proc = subprocess.Popen(['/usr/lib/dart/bin/pub', 'global', 'activate'] + SOURCE_ARGS, env={
+    proc = subprocess.Popen(['%s/pub' % (DART_HOME), 'global', 'activate'] + SOURCE_ARGS, env={
         'PUB_HOSTED_URL': PUB_HOSTED_URL,
         'PUB_CACHE': CACHE_DIR,
         'HOME':BASE_DIR
