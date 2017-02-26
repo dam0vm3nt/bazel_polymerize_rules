@@ -119,7 +119,7 @@ def init_polymerize(dart_home):
     dart_home=dart_home,
     package_name='polymerize',
     tool_name='polymerize',
-    package_version='0.4.5',
+    package_version='0.4.7',
     pub_host = 'http://pub.drafintech.it:5001')
 
 
