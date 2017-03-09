@@ -120,7 +120,7 @@ def init_polymerize(dart_home):
     package_name='polymerize',
     tool_name='polymerize',
     package_version='0.6.0',
-    pub_host = 'http://pub.drafintech.it:5001')
+    pub_host = 'https://pub.dartlang.org')
 
 
 def init_local_polymerize(dart_home,path):
@@ -131,4 +131,4 @@ def init_local_polymerize(dart_home,path):
     dart_home=dart_home,
     package_version='0.6.0',
     local_dir = path,
-    pub_host = 'http://pub.drafintech.it:5001')
+    pub_host = 'https://pub.dartlang.org')
