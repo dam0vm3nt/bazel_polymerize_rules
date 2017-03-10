@@ -1,3 +1,5 @@
+POLYMERIZE_VERSION='0.6.1'
+
 def _buildLibTemplate(repository_ctx,dep_string):
   repository_ctx.template(
    "BUILD",repository_ctx.attr._templ,
@@ -30,7 +32,7 @@ def _dartLibImp(repository_ctx):
    else :
      repository_ctx.symlink(Label("@polymerize_tool//:polymerize.py"),"polymerize.py")
      _buildLibTemplate(repository_ctx,dep_string)
-     repository_ctx.execute([
+     res = repository_ctx.execute([
        'python',
        '%s' % repository_ctx.path('polymerize.py'),
        'pub',
@@ -38,6 +40,8 @@ def _dartLibImp(repository_ctx):
        '-v',repository_ctx.attr.version,
        '-H',repository_ctx.attr.pub_host,
        '-d',repository_ctx.path("")])
+     if (res.return_code!=0) :
+       fail('Error while downloading dependency %s - %s using %s: \nSTDERR:\n%s\nSTDOUT:\n%s' % (repository_ctx.attr.package_name,repository_ctx.attr.version,repository_ctx.attr.pub_host,res.stderr,res.stdout))
 
 
 dart_library = repository_rule(
@@ -88,16 +92,22 @@ def _dartPubImp(repository_ctx) :
      '${tool_name}' : repository_ctx.attr.tool_name
  });
 
- repository_ctx.execute([
+ # print('Fetching %s (%s) with pub ...' % (repository_ctx.attr.package_name,repository_ctx.attr.package_version))
+ res = repository_ctx.execute([
    'python',
    repository_ctx.path('pub.py'),
    repository_ctx.attr.package_name,
    repository_ctx.attr.package_version])
 
+ if (res.return_code!=0) :
+   fail("Error while installing polymerize tool.\nSTDERR:\n%s\nSTDOUT:\n%s" % (res.stderr , res.stdout))
+
+ # print("Success")
+
 dart_tool = repository_rule(
   implementation = _dartPubImp,
   attrs = {
-    'pub_host' : attr.string(default='https://pub.dartlang.org/api'),
+    'pub_host' : attr.string(default='https://pub.dartlang.org'),
     'package_name' : attr.string(default='polymerize'),
     'package_version' : attr.string(default='0.2.10'),
     'tool_name' : attr.string(default='polymerize'),
@@ -119,8 +129,8 @@ def init_polymerize(dart_home):
     dart_home=dart_home,
     package_name='polymerize',
     tool_name='polymerize',
-    package_version='0.6.0',
-    pub_host = 'https://pub.dartlang.org')
+    package_version=POLYMERIZE_VERSION,
+    pub_host = 'https://pub.dart-polymer.com')
 
 
 def init_local_polymerize(dart_home,path):
@@ -129,6 +139,6 @@ def init_local_polymerize(dart_home,path):
     package_name='polymerize',
     tool_name='polymerize',
     dart_home=dart_home,
-    package_version='0.6.0',
+    package_version=POLYMERIZE_VERSION,
     local_dir = path,
-    pub_host = 'https://pub.dartlang.org')
+    pub_host = 'http://pub.dart-polymer.com')

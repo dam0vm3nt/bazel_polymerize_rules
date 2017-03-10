@@ -20,21 +20,23 @@ dependencies:
 
     pubspec.close()
 
-    log = open(os.path.join(BASE_DIR, "log"),mode='w')
+    #with open(os.path.join(BASE_DIR, ".publog"),mode='w') as log :
 
     if OVERRIDES:
-        SOURCE_ARGS = ['--source', 'path', OVERRIDES]
+         SOURCE_ARGS = ['--source', 'path', OVERRIDES]
     else:
-        SOURCE_ARGS = [pkg_name, pkg_version]
+         SOURCE_ARGS = [pkg_name, pkg_version]
 
     proc = subprocess.Popen(['%s/pub' % (DART_HOME), 'global', 'activate'] + SOURCE_ARGS, env={
-        'PUB_HOSTED_URL': PUB_HOSTED_URL,
-        'PUB_CACHE': CACHE_DIR,
-        'HOME':BASE_DIR
-    }, stdout=log, stderr=log)
+         'PUB_HOSTED_URL': PUB_HOSTED_URL,
+         'PUB_CACHE': CACHE_DIR,
+         'HOME':BASE_DIR
+    })
 
     proc.wait()
-    log.close()
+
+    #if (proc.returncode!=0) :
+    #    print("COULD NOT INITIALIZE POLYMERIZE FOR BAZEL !!!! Please retry with a bazel clean");
     return proc.returncode
 
 
