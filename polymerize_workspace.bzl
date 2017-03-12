@@ -1,4 +1,4 @@
-POLYMERIZE_VERSION='0.6.1'
+POLYMERIZE_VERSION='0.7.0'
 
 def _buildLibTemplate(repository_ctx,dep_string):
   repository_ctx.template(
@@ -141,4 +141,4 @@ def init_local_polymerize(dart_home,path):
     dart_home=dart_home,
     package_version=POLYMERIZE_VERSION,
     local_dir = path,
-    pub_host = 'http://pub.dart-polymer.com')
+    pub_host = 'https://pub.dart-polymer.com')
