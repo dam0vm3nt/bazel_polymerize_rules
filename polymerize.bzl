@@ -126,6 +126,50 @@ polymer_library = rule(
   #  "summary" : "%{name}.sum"
   })
 
+def _dartFileImpl(ctx):
+  all_inputs=[];
+  all_inputs+=ctx.files.dart_sources;
+
+  args=['dart_file'];
+
+  for f in ctx.attr.deps:
+    args+=['-s',f.summary.path]
+    all_inputs+=[f.summary]
+
+  args+=['-o',ctx.outputs.js.path]
+
+  #for f in ctx.files.dart_sources:
+  args+=['-i',ctx.attr.dart_source_uri]
+
+  ctx.action(
+    inputs=all_inputs,
+    outputs= [ ctx.outputs.js, ctx.outputs.sum,ctx.outputs.js_map ],
+    arguments= args,
+    execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time, will it work for compile too?
+    progress_message="Building %s" % ctx.outputs.js.short_path,
+    executable= ctx.executable._exe_py)
+
+  return struct(
+      js = ctx.outputs.js,
+      summary = ctx.outputs.sum
+  );
+
+dart_file = rule(
+    implementation = _dartFileImpl,
+    attrs={
+      'dart_sources': attr.label_list(allow_files=True),
+      'dart_source_uri' : attr.string(),
+      'deps': attr.label_list(allow_files=False,providers=["summary"]),
+      '_exe_py' : attr.label(cfg='host',default = Label('@polymerize_tool//:polymerize'),executable=True)
+    },
+    outputs = {
+        "js" : "%{name}.js",
+        "sum" : "%{name}.sum",
+        "js_map": "%{name}.js.map"
+        # "summary" : "%{name}.sum"
+    }
+)
+
 
 def generateBowerImpl(ctx):
   # collect all deps

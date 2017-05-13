@@ -57,6 +57,19 @@ dart_library = repository_rule(
     }
   )
 
+dart_library2 = repository_rule(
+    implementation = _dartLibImp,
+    attrs = {
+      'deps' : attr.string_list(),
+      'package_name' : attr.string(),
+      'pub_host' : attr.string(default='https://pub.dartlang.org/api'),
+      'version' : attr.string(),
+      'src_path' : attr.string(),
+      '_templ' : attr.label(default=Label("//:pub2.template.BUILD")),
+      #'_pub_download' : attr.label(cfg='host',default = Label('//:pub_download'),executable=True)
+    }
+  )
+
 ##
 ## Repository rule to create a tool from a dart
 ## package.
