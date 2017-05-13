@@ -171,6 +171,26 @@ dart_file = rule(
 )
 
 
+def exportDartSDK(ctx):
+  ctx.action(
+      outputs=[ctx.outputs.js,ctx.outputs.html],
+      execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time
+      arguments= ['export_sdk','-o',ctx.outputs.js.path,'-h',ctx.outputs.html.path],
+      progress_message="Export Dart SDK ",
+      executable= ctx.executable._exe)
+
+export_dart_sdk = rule (
+   implementation = exportDartSDK,
+   attrs={
+           '_exe' : attr.label(cfg='host',default = Label('@polymerize_tool//:polymerize'),executable=True),
+       },
+       outputs = {
+           "js" : "%{name}.js",
+           'html' : '%{name}.mod.html'
+       }
+   )
+
+
 def generateBowerImpl(ctx):
   # collect all deps
   args = ["bower"]
