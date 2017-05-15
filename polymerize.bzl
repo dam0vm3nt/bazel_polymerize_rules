@@ -146,7 +146,15 @@ def _dartFileImpl(ctx):
 
   ctx.action(
     inputs=all_inputs,
-    outputs= [ ctx.outputs.js, ctx.outputs.sum,ctx.outputs.js_map ,ctx.outputs.html,ctx.outputs.gen],
+    outputs= [ ctx.outputs.gen ],
+    arguments= ['dart_file','generate','-g',ctx.outputs.gen.path,'-i',ctx.attr.dart_source_uri],
+    execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time, will it work for compile too?
+    progress_message="Building %s" % ctx.outputs.js.short_path,
+    executable= ctx.executable._exe_py)
+
+  ctx.action(
+    inputs=all_inputs + [ctx.outputs.gen],
+    outputs= [ ctx.outputs.js, ctx.outputs.sum,ctx.outputs.js_map ,ctx.outputs.html],
     arguments= args,
     execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time, will it work for compile too?
     progress_message="Building %s" % ctx.outputs.js.short_path,
