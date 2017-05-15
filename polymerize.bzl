@@ -234,18 +234,40 @@ export_dart_sdk = rule (
        }
    )
 
+def copyToBinDir(ctx):
 
-def copyHtml(ctx):
-  for f in ctx.files.html:
-    ff = ctx.new_file()
+  copied = [ ctx.new_file(x.label.name[4:]) for x in ctx.attr.resources ]
+
+  args =['copy','-l',ctx.outputs.fileList.path]
+
+  for p in ctx.files.resources:
+    args+= ['-s',p.path]
+
+  for d in copied:
+    args+= ['-d',d.path]
 
 
-copy_html =rule(
-    implementation = copyHtml,
-    attrs = {
-        'html' : attr.label_list(allow_files=True)
+  ctx.action(
+      outputs=[ctx.outputs.fileList]+copied,
+      inputs= ctx.files.resources,
+      arguments=args,
+      progress_message='copy files',
+      executable = ctx.executable._exe)
+  return struct(
+      copied = copied
+  )
+
+copy_to_bin_dir = rule(
+    implementation = copyToBinDir,
+    attrs ={
+        "resources" : attr.label_list(allow_files=True),
+        '_exe' : attr.label(cfg='host',default = Label('@polymerize_tool//:polymerize'),executable=True)
+    },
+    outputs = {
+        'fileList' : '%{name}.list'
     }
 )
+
 
 def generateBowerImpl(ctx):
   # collect all deps
