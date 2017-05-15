@@ -136,12 +136,16 @@ def _dartFileImpl(ctx):
 
   args_html=['dart_file','html'];
 
+  for f in ctx.attr.other_deps:
+      args_html+=['-d',f.html.path]
+      all_inputs_html+=[f.html]
 
   for f in ctx.attr.deps:
     args+=['-s',f.summary.path]
     args_html+=['-d',f.html.path]
     all_inputs+=[f.summary]
     all_inputs_html+=[f.html]
+
 
   args+=['-o',ctx.outputs.js.path]
   args+=['-g',ctx.outputs.gen.path]
@@ -192,6 +196,7 @@ dart_file = rule(
     implementation = _dartFileImpl,
     attrs={
       'dart_sources': attr.label_list(allow_files=True),
+      'other_deps':attr.label_list(allow_files=True,providers=['html']),
       'dart_source_uri' : attr.string(),
       'deps': attr.label_list(allow_files=False,providers=["summary"]),
       '_exe_py' : attr.label(cfg='host',default = Label('@polymerize_tool//:polymerize'),executable=True)
@@ -214,6 +219,9 @@ def exportDartSDK(ctx):
       arguments= ['export_sdk','-o',ctx.outputs.js.path,'-h',ctx.outputs.html.path],
       progress_message="Export Dart SDK ",
       executable= ctx.executable._exe)
+  return struct(
+        html = ctx.outputs.html
+    );
 
 export_dart_sdk = rule (
    implementation = exportDartSDK,
