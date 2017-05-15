@@ -127,38 +127,59 @@ polymer_library = rule(
   })
 
 def _dartFileImpl(ctx):
-  all_inputs=[];
+  all_inputs=[ctx.outputs.gen];
   all_inputs+=ctx.files.dart_sources;
+
+  all_inputs_html = [ctx.outputs.js];
 
   args=['dart_file'];
 
+  args_html=['dart_file','html'];
+
+
   for f in ctx.attr.deps:
-    args+=['-s',f.summary.path,'-d',f.html.path]
-    all_inputs+=[f.summary,f.html]
+    args+=['-s',f.summary.path]
+    args_html+=['-d',f.html.path]
+    all_inputs+=[f.summary]
+    all_inputs_html+=[f.html]
 
   args+=['-o',ctx.outputs.js.path]
-  args+=['-h',ctx.outputs.html.path]
   args+=['-g',ctx.outputs.gen.path]
+
+  args_html+=['-o',ctx.outputs.js.path]
+  args_html+=['-h',ctx.outputs.html.path]
 
   #for f in ctx.files.dart_sources:
   args+=['-i',ctx.attr.dart_source_uri]
+  args_html+=['-i',ctx.attr.dart_source_uri]
 
 
+  # GERATE DART FILE
   ctx.action(
-    inputs=all_inputs,
+    inputs=ctx.files.dart_sources,
     outputs= [ ctx.outputs.gen ],
     arguments= ['dart_file','generate','-g',ctx.outputs.gen.path,'-i',ctx.attr.dart_source_uri],
     execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time, will it work for compile too?
-    progress_message="Building %s" % ctx.outputs.js.short_path,
+    progress_message="Generating %s" % ctx.outputs.js.short_path,
     executable= ctx.executable._exe_py)
 
+  # BUILD WITH DDC
   ctx.action(
-    inputs=all_inputs + [ctx.outputs.gen],
-    outputs= [ ctx.outputs.js, ctx.outputs.sum,ctx.outputs.js_map ,ctx.outputs.html],
+    inputs=all_inputs,
+    outputs= [ ctx.outputs.js, ctx.outputs.sum,ctx.outputs.js_map],
     arguments= args,
     execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time, will it work for compile too?
     progress_message="Building %s" % ctx.outputs.js.short_path,
     executable= ctx.executable._exe_py)
+
+  # GENERATE HTML STUB
+  ctx.action(
+      inputs=all_inputs_html,
+      outputs= [ ctx.outputs.html ],
+      arguments= args_html,
+      execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time, will it work for compile too?
+      progress_message="Generate HTML %s" % ctx.outputs.js.short_path,
+      executable= ctx.executable._exe_py)
 
   return struct(
       js = ctx.outputs.js,
