@@ -157,12 +157,15 @@ def _dartFileImpl(ctx):
   args+=['-i',ctx.attr.dart_source_uri]
   args_html+=['-i',ctx.attr.dart_source_uri]
 
+  html_temp = ctx.new_file('html_temp_%s' % ctx.label.name.replace('/','__'));
+  all_inputs_html+= [html_temp]
+  args_html+=['-t',html_temp.path]
 
   # GERATE DART FILE
   ctx.action(
     inputs=ctx.files.dart_sources,
-    outputs= [ ctx.outputs.gen ],
-    arguments= ['dart_file','generate','-g',ctx.outputs.gen.path,'-i',ctx.attr.dart_source_uri],
+    outputs= [ ctx.outputs.gen, html_temp ],
+    arguments= ['dart_file','generate','-g',ctx.outputs.gen.path,'-i',ctx.attr.dart_source_uri,'-t',html_temp.path],
     execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time, will it work for compile too?
     progress_message="Generating %s" % ctx.outputs.js.short_path,
     executable= ctx.executable._exe_py)
