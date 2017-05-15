@@ -138,13 +138,15 @@ def _dartFileImpl(ctx):
 
   args+=['-o',ctx.outputs.js.path]
   args+=['-h',ctx.outputs.html.path]
+  args+=['-g',ctx.outputs.gen.path]
 
   #for f in ctx.files.dart_sources:
   args+=['-i',ctx.attr.dart_source_uri]
 
+
   ctx.action(
     inputs=all_inputs,
-    outputs= [ ctx.outputs.js, ctx.outputs.sum,ctx.outputs.js_map ,ctx.outputs.html],
+    outputs= [ ctx.outputs.js, ctx.outputs.sum,ctx.outputs.js_map ,ctx.outputs.html,ctx.outputs.gen],
     arguments= args,
     execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time, will it work for compile too?
     progress_message="Building %s" % ctx.outputs.js.short_path,
@@ -152,6 +154,7 @@ def _dartFileImpl(ctx):
 
   return struct(
       js = ctx.outputs.js,
+      gen = ctx.outputs.gen,
       summary = ctx.outputs.sum,
       html = ctx.outputs.html
   );
@@ -167,6 +170,7 @@ dart_file = rule(
     outputs = {
         "js" : "%{name}.js",
         "sum" : "%{name}.sum",
+        "gen" : "%{name}.g.dart",
         "js_map": "%{name}.js.map",
         "html" : "%{name}.mod.html"
         # "summary" : "%{name}.sum"
