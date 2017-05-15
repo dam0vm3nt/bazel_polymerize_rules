@@ -271,6 +271,37 @@ copy_to_bin_dir = rule(
     }
 )
 
+def simple_asset_impl(ctx):
+
+  args =['copy']
+
+  args+= ['-s',ctx.files.path[0].path]
+
+  args+= ['-d',ctx.outputs.asset.path]
+
+
+  ctx.action(
+      outputs=[ctx.outputs.asset],
+      inputs= ctx.files.path,
+      arguments=args,
+      progress_message='copy assets',
+      execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time, will it work for compile too?
+      executable = ctx.executable._exe)
+  return struct(
+      html = ctx.outputs.asset
+  )
+
+simple_asset = rule(
+    implementation = simple_asset_impl,
+    attrs ={
+        "path" : attr.label_list(allow_files=True),
+        '_exe' : attr.label(cfg='host',default = Label('@polymerize_tool//:polymerize'),executable=True)
+    },
+    outputs={
+        'asset' : 'file_%{name}'
+    }
+)
+
 
 def generateBowerImpl(ctx):
   # collect all deps

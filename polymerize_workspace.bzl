@@ -70,6 +70,25 @@ dart_library2 = repository_rule(
     }
   )
 
+def bower_library_impl(repository_ctx):
+  repository_ctx.symlink(repository_ctx.attr.bower_repo+"/bower.json","bower.json")
+  repository_ctx.symlink(Label("@polymerize_tool//:polymerize.py"),"polymerize.py")
+  res = repository_ctx.execute([
+     'python',
+     repository_ctx.path('polymerize.py'),
+     'bower_library',
+     repository_ctx.path("")])
+
+  if (res.return_code!=0) :
+     fail("Error while installing polymerize tool.\nSTDERR:\n%s\nSTDOUT:\n%s" % (res.stderr , res.stdout))
+
+bower_library = repository_rule(
+  implementation=bower_library_impl,
+  attrs= {
+    'bower_repo' : attr.string()
+  }
+)
+
 ##
 ## Repository rule to create a tool from a dart
 ## package.
