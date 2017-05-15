@@ -235,6 +235,18 @@ export_dart_sdk = rule (
    )
 
 
+def copyHtml(ctx):
+  for f in ctx.files.html:
+    ff = ctx.new_file()
+
+
+copy_html =rule(
+    implementation = copyHtml,
+    attrs = {
+        'html' : attr.label_list(allow_files=True)
+    }
+)
+
 def generateBowerImpl(ctx):
   # collect all deps
   args = ["bower"]
