@@ -198,7 +198,7 @@ dart_file = rule(
       'dart_sources': attr.label_list(allow_files=True),
       'other_deps':attr.label_list(allow_files=True,providers=['html']),
       'dart_source_uri' : attr.string(),
-      'deps': attr.label_list(allow_files=False,providers=["summary"]),
+      'deps': attr.label_list(allow_files=False,providers=["summary",'html']),
       '_exe_py' : attr.label(cfg='host',default = Label('@polymerize_tool//:polymerize'),executable=True)
     },
     outputs = {
