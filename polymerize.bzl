@@ -238,24 +238,21 @@ export_dart_sdk = rule (
    )
 
 def copyToBinDir(ctx):
+  copied=[]
+  content=""
+  for src in ctx.attr.resources:
+    dst = ctx.new_file(src.label.name[4:])
+    copied+=[dst]
+    content+="%s\n" % dst.path
+    ctx.action(
+        outputs=[dst],
+        inputs=src.files.to_list(),
+        arguments=[ p.path for p in src.files] + [dst.path],
+        progress_message='copy file %s' % src.label,
+        command='cp $1 $2')
 
-  copied = [ ctx.new_file(x.label.name[4:]) for x in ctx.attr.resources ]
+  ctx.action(outputs=[ctx.outputs.fileList],inputs=copied,command='touch $1',arguments=[ctx.outputs.fileList.path])
 
-  args =['copy','-l',ctx.outputs.fileList.path]
-
-  for p in ctx.files.resources:
-    args+= ['-s',p.path]
-
-  for d in copied:
-    args+= ['-d',d.path]
-
-
-  ctx.action(
-      outputs=[ctx.outputs.fileList]+copied,
-      inputs= ctx.files.resources,
-      arguments=args,
-      progress_message='copy files',
-      executable = ctx.executable._exe)
   return struct(
       copied = copied
   )
@@ -273,11 +270,9 @@ copy_to_bin_dir = rule(
 
 def simple_asset_impl(ctx):
 
-  args =['copy']
 
-  args+= ['-s',ctx.files.path[0].path]
+  args = [ctx.files.path[0].path,ctx.outputs.asset.path]
 
-  args+= ['-d',ctx.outputs.asset.path]
 
 
   ctx.action(
@@ -286,7 +281,7 @@ def simple_asset_impl(ctx):
       arguments=args,
       progress_message='copy assets',
       execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time, will it work for compile too?
-      executable = ctx.executable._exe)
+      command='cp $1 $2')
   return struct(
       html = ctx.outputs.asset
   )
