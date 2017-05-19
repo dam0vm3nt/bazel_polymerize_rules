@@ -293,7 +293,7 @@ simple_asset = rule(
         '_exe' : attr.label(cfg='host',default = Label('@polymerize_tool//:polymerize'),executable=True)
     },
     outputs={
-        'asset' : 'file_%{name}'
+        'asset' : 'assets/%{name}'
     }
 )
 
