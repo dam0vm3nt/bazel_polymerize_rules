@@ -46,30 +46,43 @@ def _dartFileImpl(ctx):
   all_inputs_html+= [html_temp]
   args_html+=['-t',html_temp.path]
 
+  genflag=ctx.new_file(ctx.label.name+".genflags")
+  ctx.file_action(genflag,content= '\n'.join(['dart_file','generate','-g',ctx.outputs.gen.path,'-i',ctx.attr.dart_source_uri,'-t',html_temp.path]))
+
   # GERATE DART FILE
   ctx.action(
-    inputs=ctx.files.dart_sources,
+    inputs=ctx.files.dart_sources+ [genflag],
     outputs= [ ctx.outputs.gen, html_temp ],
-    arguments= ['dart_file','generate','-g',ctx.outputs.gen.path,'-i',ctx.attr.dart_source_uri,'-t',html_temp.path],
-    execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time, will it work for compile too?
+    mnemonic= 'Polymerize',
+    arguments= ['@%s' % genflag.path],
+    execution_requirements= {'supports-workers':'1'}, # This is need to make bower runs in decent time, will it work for compile too?
     progress_message="Generating %s" % ctx.outputs.js.short_path,
     executable= ctx.executable._exe_py)
 
+  genflag3=ctx.new_file(ctx.label.name+".ddcflags");
+  ctx.file_action(genflag3,content='\n'.join(args) );
+
   # BUILD WITH DDC
   ctx.action(
-    inputs=all_inputs,
+    inputs=all_inputs+[genflag3],
     outputs= [ ctx.outputs.js, ctx.outputs.sum,ctx.outputs.js_map],
-    arguments= args,
-    execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time, will it work for compile too?
+    arguments= ['@%s' % genflag3.path],
+    mnemonic= 'Polymerize',
+    execution_requirements= {'supports-workers':'1'}, # This is need to make bower runs in decent time, will it work for compile too?
     progress_message="Building %s" % ctx.outputs.js.short_path,
     executable= ctx.executable._exe_py)
 
+
+  genflag2=ctx.new_file(ctx.label.name+".htmflags");
+  ctx.file_action(genflag2,content='\n'.join(args_html) );
+
   # GENERATE HTML STUB
   ctx.action(
-      inputs=all_inputs_html,
+      inputs=all_inputs_html + [genflag2],
       outputs= [ ctx.outputs.html ],
-      arguments= args_html,
-      execution_requirements= {'local':'true'}, # This is need to make bower runs in decent time, will it work for compile too?
+      arguments= ['@%s' % genflag2.path],
+      mnemonic= 'Polymerize',
+      execution_requirements= {'supports-workers':'1'}, # This is need to make bower runs in decent time, will it work for compile too?
       progress_message="Generate HTML %s" % ctx.outputs.js.short_path,
       executable= ctx.executable._exe_py)
 
