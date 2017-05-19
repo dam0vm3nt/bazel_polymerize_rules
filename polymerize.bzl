@@ -55,7 +55,7 @@ def _dartFileImpl(ctx):
     outputs= [ ctx.outputs.gen, html_temp ],
     mnemonic= 'Polymerize',
     arguments= ['@%s' % genflag.path],
-    execution_requirements= {'supports-workers':'1'}, # This is need to make bower runs in decent time, will it work for compile too?
+    execution_requirements= {'local':'true','supports-workers':'1'}, # This is need to make bower runs in decent time, will it work for compile too?
     progress_message="Generating %s" % ctx.outputs.js.short_path,
     executable= ctx.executable._exe_py)
 
@@ -68,7 +68,7 @@ def _dartFileImpl(ctx):
     outputs= [ ctx.outputs.js, ctx.outputs.sum,ctx.outputs.js_map],
     arguments= ['@%s' % genflag3.path],
     mnemonic= 'Polymerize',
-    execution_requirements= {'supports-workers':'1'}, # This is need to make bower runs in decent time, will it work for compile too?
+    execution_requirements= {'local':'true','supports-workers':'1'}, # This is need to make bower runs in decent time, will it work for compile too?
     progress_message="Building %s" % ctx.outputs.js.short_path,
     executable= ctx.executable._exe_py)
 
@@ -82,7 +82,7 @@ def _dartFileImpl(ctx):
       outputs= [ ctx.outputs.html ],
       arguments= ['@%s' % genflag2.path],
       mnemonic= 'Polymerize',
-      execution_requirements= {'supports-workers':'1'}, # This is need to make bower runs in decent time, will it work for compile too?
+      execution_requirements= {'local':'true','supports-workers':'1'}, # This is need to make bower runs in decent time, will it work for compile too?
       progress_message="Generate HTML %s" % ctx.outputs.js.short_path,
       executable= ctx.executable._exe_py)
 
