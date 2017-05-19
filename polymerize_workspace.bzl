@@ -33,7 +33,7 @@ def _dartLibImp(repository_ctx):
      repository_ctx.symlink(Label("@polymerize_tool//:polymerize.py"),"polymerize.py")
      _buildLibTemplate(repository_ctx,dep_string)
      res = repository_ctx.execute([
-       'python',
+       #'python',
        '%s' % repository_ctx.path('polymerize.py'),
        'pub',
        '-p',repository_ctx.attr.package_name,
@@ -42,20 +42,6 @@ def _dartLibImp(repository_ctx):
        '-d',repository_ctx.path("")])
      if (res.return_code!=0) :
        fail('Error while downloading dependency %s - %s using %s: \nSTDERR:\n%s\nSTDOUT:\n%s' % (repository_ctx.attr.package_name,repository_ctx.attr.version,repository_ctx.attr.pub_host,res.stderr,res.stdout))
-
-
-dart_library = repository_rule(
-    implementation = _dartLibImp,
-    attrs = {
-      'deps' : attr.string_list(),
-      'package_name' : attr.string(),
-      'pub_host' : attr.string(default='https://pub.dartlang.org/api'),
-      'version' : attr.string(),
-      'src_path' : attr.string(),
-      '_templ' : attr.label(default=Label("//:pub.template.BUILD")),
-      #'_pub_download' : attr.label(cfg='host',default = Label('//:pub_download'),executable=True)
-    }
-  )
 
 dart_library2 = repository_rule(
     implementation = _dartLibImp,
@@ -74,7 +60,7 @@ def bower_library_impl(repository_ctx):
   repository_ctx.symlink(repository_ctx.attr.bower_repo+"/bower.json","bower.json")
   repository_ctx.symlink(Label("@polymerize_tool//:polymerize.py"),"polymerize.py")
   res = repository_ctx.execute([
-     'python',
+     #'python',
      repository_ctx.path('polymerize.py'),
      'bower_library',
      repository_ctx.path("")])
@@ -95,9 +81,8 @@ bower_library = repository_rule(
 ##
 
 def _dartPubImp(repository_ctx) :
- #print("CREATING POLYMERIZE TOOL REPOSITORY")
- #print("PUBBING : %s " % repository_ctx.path(''))
 
+ # Create the python script that will run pub in a local area
  repository_ctx.template('pub.py',repository_ctx.attr._pub_pkg_py,substitutions={
      '${base_dir}' : "%s"  % repository_ctx.path('tool'),
      '${cache_dir}' : "%s" % repository_ctx.path('cache'),
@@ -109,9 +94,7 @@ def _dartPubImp(repository_ctx) :
  if (repository_ctx.attr.local_dir) :
    print("USING LOCAL REPOSITORY : %s" % repository_ctx.attr.local_dir);
 
-
- #print("REPPING")
-
+ # Prepare the python script that will execute the tool
  repository_ctx.template('%s.py' % repository_ctx.attr.tool_name,repository_ctx.attr._polymerize_py,substitutions={
       '${base_dir}' : "%s"  % repository_ctx.path('tool'),
       '${cache_dir}' : "%s" % repository_ctx.path('cache'),
@@ -119,12 +102,12 @@ def _dartPubImp(repository_ctx) :
       '${tool_name}' : repository_ctx.attr.tool_name
       },executable=True)
 
- #print("CIPPING")
+ # Create the BUILD file that will create the target corresponding to the python script
  repository_ctx.template('BUILD',repository_ctx.attr._dartpub_build,substitutions={
      '${tool_name}' : repository_ctx.attr.tool_name
  });
 
- # print('Fetching %s (%s) with pub ...' % (repository_ctx.attr.package_name,repository_ctx.attr.package_version))
+ # Pub get the tool
  res = repository_ctx.execute([
    'python',
    repository_ctx.path('pub.py'),
@@ -146,7 +129,7 @@ dart_tool = repository_rule(
     'local_dir': attr.string(),
     'dart_home' : attr.string(),
     '_pub_pkg_py' : attr.label(default=Label('//:template.pub.py')),
-    '_polymerize_py' : attr.label(default=Label('//:template.dart_tool.py')),
+    '_polymerize_py' : attr.label(default=Label('//:template.dart_tool.sh')),
     '_dartpub_build' : attr.label(default=Label('//:dart_tool.BUILD'))
   })
 
