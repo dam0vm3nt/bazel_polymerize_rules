@@ -1,4 +1,4 @@
-POLYMERIZE_VERSION='0.7.2'
+POLYMERIZE_VERSION='0.8.0'
 
 def _buildLibTemplate(repository_ctx,dep_string):
   repository_ctx.template(
