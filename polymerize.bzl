@@ -12,47 +12,21 @@ def modulePath(label):
  return "/".join(seq) # + ".mod.html"
 
 def _dartFileImpl(ctx):
-  #all_inputs=[ctx.outputs.gen]
-  #all_inputs+=ctx.files.dart_sources
-
-  #all_inputs_html = [ctx.outputs.js]
-
-  #gen_and_build_inputs=[ctx.outputs.gen]
   gen_and_build_inputs=ctx.files.dart_sources
 
-
-  #args=['dart_file']
-
-  #args_html=['dart_file','html']
 
   args_gen_and_build=['dart_file','gen_and_build']
 
   for f in ctx.attr.other_deps:
-      #args_html+=['-d',f.html.path]
       args_gen_and_build+=['-d',f.html.path]
-      #all_inputs_html+=[f.html]
       gen_and_build_inputs+=[f.html]
 
   for f in ctx.attr.deps:
-    #args+=['-s',f.summary.path]
-    #args_html+=['-d',f.html.path]
     args_gen_and_build+=['-s',f.summary.path]
     args_gen_and_build+=['-d',f.html.path]
-    #all_inputs+=[f.summary]
-    #all_inputs_html+=[f.html]
     gen_and_build_inputs+=[f.summary]
     gen_and_build_inputs+=[f.html]
 
-
-
-  #args+=['-o',ctx.outputs.js.path]
-  #args+=['-g',ctx.outputs.gen.path]
-
-  #args_html+=['-o',ctx.outputs.js.path]
-  #args_html+=['-h',ctx.outputs.html.path]
-
-  #args+=['-i',ctx.attr.dart_source_uri]
-  #args_html+=['-i',ctx.attr.dart_source_uri]
 
   args_gen_and_build+=['-o',ctx.outputs.js.path]
   args_gen_and_build+=['-g',ctx.outputs.gen.path]
@@ -60,13 +34,6 @@ def _dartFileImpl(ctx):
   args_gen_and_build+=['-h',ctx.outputs.html.path]
 
   args_gen_and_build+=['-i',ctx.attr.dart_source_uri]
-
-  #html_temp = ctx.new_file('html_temp_%s' % ctx.label.name.replace('/','__'));
-  #all_inputs_html+= [html_temp]
-  #args_html+=['-t',html_temp.path]
-
-  #genflag=ctx.new_file(ctx.label.name+".genflags")
-  #ctx.file_action(genflag,content= '\n'.join(['dart_file','generate','-g',ctx.outputs.gen.path,'-i',ctx.attr.dart_source_uri,'-t',html_temp.path]))
 
   flagfile=ctx.new_file(ctx.label.name+".polymerize_flags");
   ctx.file_action(flagfile,content='\n'.join(args_gen_and_build) );
@@ -77,46 +44,8 @@ def _dartFileImpl(ctx):
     mnemonic= 'Polymerize',
     arguments= ['@%s' % flagfile.path],
     execution_requirements= {'local':'true','supports-workers':'1'}, # This is need to make bower runs in decent time, will it work for compile too?
-    progress_message="Generating adn building %s" % ctx.outputs.js.short_path,
+    progress_message="Generating and building %s" % ctx.outputs.js.short_path,
     executable= ctx.executable._exe_py)
-
-
-  # GERATE DART FILE
-  #ctx.action(
-  #  inputs=ctx.files.dart_sources+ [genflag],
-  #  outputs= [ ctx.outputs.gen, html_temp ],
-  #  mnemonic= 'Polymerize',
-  #  arguments= ['@%s' % genflag.path],
-  #  execution_requirements= {'local':'true','supports-workers':'1'}, # This is need to make bower runs in decent time, will it work for compile too?
-  #  progress_message="Generating %s" % ctx.outputs.js.short_path,
-  #  executable= ctx.executable._exe_py)
-
-  #genflag3=ctx.new_file(ctx.label.name+".ddcflags");
-  #ctx.file_action(genflag3,content='\n'.join(args) );
-
-  # BUILD WITH DDC
-  #ctx.action(
-  #  inputs=all_inputs+[genflag3],
-  #  outputs= [ ctx.outputs.js, ctx.outputs.sum,ctx.outputs.js_map],
-  #  arguments= ['@%s' % genflag3.path],
-  #  mnemonic= 'Polymerize',
-  #  execution_requirements= {'local':'true','supports-workers':'1'}, # This is need to make bower runs in decent time, will it work for compile too?
-  #  progress_message="Building %s" % ctx.outputs.js.short_path,
-  #  executable= ctx.executable._exe_py)
-
-
-  #genflag2=ctx.new_file(ctx.label.name+".htmflags");
-  #ctx.file_action(genflag2,content='\n'.join(args_html) );
-
-  # GENERATE HTML STUB
-  #ctx.action(
-  #    inputs=all_inputs_html + [genflag2],
-  #    outputs= [ ctx.outputs.html ],
-  #    arguments= ['@%s' % genflag2.path],
-  #    mnemonic= 'Polymerize',
-  #    execution_requirements= {'local':'true','supports-workers':'1'}, # This is need to make bower runs in decent time, will it work for compile too?
-  #    progress_message="Generate HTML %s" % ctx.outputs.js.short_path,
-  #    executable= ctx.executable._exe_py)
 
   return struct(
       js = ctx.outputs.js,
