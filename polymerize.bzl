@@ -37,6 +37,7 @@ def _dartFileImpl(ctx):
 
   flagfile=ctx.new_file(ctx.label.name+".polymerize_flags");
   ctx.file_action(flagfile,content='\n'.join(args_gen_and_build) );
+
   # GERATE DART FILE
   ctx.action(
     inputs=gen_and_build_inputs + [flagfile],
