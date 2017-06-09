@@ -1,4 +1,4 @@
-POLYMERIZE_VERSION='0.8.6'
+POLYMERIZE_VERSION='0.8.6+1'
 
 def _buildLibTemplate(repository_ctx,dep_string):
   repository_ctx.template(
@@ -107,6 +107,11 @@ def _dartPubImp(repository_ctx) :
      '${tool_name}' : repository_ctx.attr.tool_name
  });
 
+ # Create the WORKSPACE file that will create the target corresponding to the python script
+ repository_ctx.template('WORKSPACE',repository_ctx.attr._dartpub_workspace,substitutions={
+     '${tool_name}' : repository_ctx.attr.tool_name
+ });
+
  # Pub get the tool
  res = repository_ctx.execute([
    'python',
@@ -130,7 +135,8 @@ dart_tool = repository_rule(
     'dart_home' : attr.string(),
     '_pub_pkg_py' : attr.label(default=Label('//:template.pub.py')),
     '_polymerize_py' : attr.label(default=Label('//:template.dart_tool.sh')),
-    '_dartpub_build' : attr.label(default=Label('//:dart_tool.BUILD'))
+    '_dartpub_build' : attr.label(default=Label('//:dart_tool.BUILD')),
+    '_dartpub_workspace' : attr.label(default=Label('//:dart_tool.WORKSPACE'))
   })
 
 
